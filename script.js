@@ -526,18 +526,31 @@ function initAudio() {
     // Store audio reference
     window.currentAudio = audio;
     
-    // Auto-play on first interaction
-    document.addEventListener('click', () => {
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-        if (!isPlaying) {
-            audio.play();
+    // Try to auto-play immediately
+    const playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            console.log('Audio auto-played successfully');
             isPlaying = true;
             const icon = document.querySelector('#play-pause-btn .icon');
-            icon.textContent = '⏸';
-        }
-    }, { once: true });
+            if (icon) icon.textContent = '⏸';
+        }).catch(error => {
+            console.log('Auto-play prevented by browser, will play on first interaction');
+            // Auto-play failed, will play on first click
+            document.addEventListener('click', () => {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                if (!isPlaying) {
+                    audio.play();
+                    isPlaying = true;
+                    const icon = document.querySelector('#play-pause-btn .icon');
+                    if (icon) icon.textContent = '⏸';
+                }
+            }, { once: true });
+        });
+    }
 }
 
 function playTone() {
