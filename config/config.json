@@ -1,11 +1,11 @@
 {
   "names": {
-    "yourName": "XYZ",
-    "herName": "XYZ"
+    "yourName": "Aman singh",
+    "herName": "Palak singh"
   },
   "proposal": {
     "title": "Our Forever",
-    "question": "Will You Marry Me?",
+    "question": "Will You forgive Me?",
     "subtitle": "Click the heart to open"
   },
   "celebration": {
@@ -17,35 +17,9 @@
     }
   },
   "relationship": {
-    "startDate": "2023-03-11"
+    "startDate": "2023-04-09"
   },
-  "memories": [
-    {
-      "date": "2023-03-11",
-      "title": "Where It All Began",
-      "desc": "Coffee shop on a rainy afternoon"
-    },
-    {
-      "date": "First Kiss",
-      "title": "Magic Moment",
-      "desc": "Under the stars at midnight"
-    },
-    {
-      "date": "Our Trip",
-      "title": "Paris Adventure",
-      "desc": "Eiffel Tower at sunset"
-    },
-    {
-      "date": "Moving In",
-      "title": "New Chapter",
-      "desc": "Our first home together"
-    },
-    {
-      "date": "Anniversary",
-      "title": "One Year Later",
-      "desc": "Dinner at our favorite restaurant"
-    }
-  ],
+
   "loveReasons": [
     "Your smile lights up my darkest days",
     "The way you laugh at my terrible jokes",
