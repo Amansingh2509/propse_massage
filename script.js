@@ -511,10 +511,14 @@ function toggleAudio() {
 function initAudio() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     
-    // Load the first song
+    // Load the first song with autoplay
     currentTrack = 0;
     const audio = new Audio(playlist[currentTrack].file);
     audio.loop = true;
+    audio.autoplay = true;
+    audio.muted = false;
+    audio.volume = 0.5;
+    audio.preload = 'auto';
     
     gainNode = audioContext.createGain();
     gainNode.gain.value = 0.5;
@@ -526,31 +530,70 @@ function initAudio() {
     // Store audio reference
     window.currentAudio = audio;
     
-    // Try to auto-play immediately
-    const playPromise = audio.play();
-    
-    if (playPromise !== undefined) {
-        playPromise.then(() => {
+    // Try multiple strategies to auto-play
+    const attemptAutoplay = async () => {
+        try {
+            // Resume audio context if suspended
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
+            
+            // Strategy 1: Direct play
+            await audio.play();
             console.log('Audio auto-played successfully');
             isPlaying = true;
             const icon = document.querySelector('#play-pause-btn .icon');
             if (icon) icon.textContent = '⏸';
-        }).catch(error => {
-            console.log('Auto-play prevented by browser, will play on first interaction');
-            // Auto-play failed, will play on first click
-            document.addEventListener('click', () => {
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
-                if (!isPlaying) {
-                    audio.play();
-                    isPlaying = true;
-                    const icon = document.querySelector('#play-pause-btn .icon');
-                    if (icon) icon.textContent = '⏸';
-                }
-            }, { once: true });
-        });
-    }
+        } catch (error) {
+            console.log('Auto-play failed:', error.message);
+            
+            // Strategy 2: Try with muted first, then unmute
+            try {
+                audio.muted = true;
+                await audio.play();
+                console.log('Audio playing muted, will unmute on interaction');
+                isPlaying = true;
+                
+                // Unmute on first interaction
+                const unmuteHandler = () => {
+                    audio.muted = false;
+                    console.log('Audio unmuted');
+                };
+                document.addEventListener('click', unmuteHandler, { once: true });
+                
+                const icon = document.querySelector('#play-pause-btn .icon');
+                if (icon) icon.textContent = '⏸';
+            } catch (e) {
+                console.log('Even muted autoplay failed:', e.message);
+                
+                // Strategy 3: Fallback to first interaction
+                document.addEventListener('click', () => {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    if (!isPlaying) {
+                        audio.play();
+                        isPlaying = true;
+                        const icon = document.querySelector('#play-pause-btn .icon');
+                        if (icon) icon.textContent = '⏸';
+                    }
+                }, { once: true });
+            }
+        }
+    };
+    
+    // Attempt autoplay immediately
+    attemptAutoplay();
+    
+    // Also try when window loads
+    window.addEventListener('load', attemptAutoplay, { once: true });
+    
+    // Also try when page becomes visible
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && !isPlaying) {
+            attemptAutoplay();
+        }
+    });
 }
 
 function playTone() {
